@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AdaptiveRun">
+<title>AdaptiveRun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070f;
+  --bg2: #0d0d1a;
+  --bg3: #13132200;
+  --border: rgba(255,255,255,.07);
+  --text: #ffffff;
+  --text2: rgba(255,255,255,.55);
+  --text3: rgba(255,255,255,.28);
+  --green: #4ade80;
+  --blue: #60a5fa;
+  --orange: #f59e0b;
+  --red: #f87171;
+  --purple: #a78bfa;
+  --slate: #94a3b8;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+  background: var(--bg);
+}
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+
+/* Scrollable content */
+.scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0; /* critical for flex scroll on Android */
+  overscroll-behavior: contain;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* Typography */
+.font-display { font-family: 'Barlow Condensed', sans-serif; }
+.font-mono { font-family: 'DM Mono', monospace; }
+
+/* App shell */
+#app {
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  padding: calc(var(--safe-top) + 12px) 16px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100; flex-shrink: 0;
+}
+
+/* Tab bar */
+.tabbar {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  position: sticky; top: 52px; z-index: 99;
+}
+.tab-btn {
+  flex: 1; padding: 11px 0; font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  color: var(--text3); border: none; background: none; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: color .2s, border-color .2s;
+  font-family: inherit; text-transform: uppercase;
+}
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* Bottom safe area padding */
+.content { padding-bottom: calc(var(--safe-bottom) + 80px + env(keyboard-inset-height, 0px)); }
+
+/* Cards */
+.card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 16px;
+}
+.card-green { border-color: rgba(74,222,128,.2); background: rgba(74,222,128,.05); }
+.card-orange { border-color: rgba(245,158,11,.2); background: rgba(245,158,11,.04); }
+.card-red { border-color: rgba(248,113,113,.2); background: rgba(248,113,113,.04); }
+.card-purple { border-color: rgba(167,139,250,.2); background: rgba(167,139,250,.04); }
+
+/* Tags */
+.tag {
+  display: inline-flex; align-items: center;
+  font-size: 8px; font-weight: 700; padding: 2px 7px;
+  border-radius: 20px; border: 1px solid;
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%; padding: 13px; border-radius: 12px; border: none; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase; color: #080810;
+  background: linear-gradient(135deg, var(--green), #22c55e);
+  box-shadow: 0 4px 20px rgba(74,222,128,.25);
+  transition: transform .1s, opacity .2s;
+}
+.btn-primary:active { transform: scale(.98); opacity: .9; }
+.btn-secondary {
+  padding: 11px 14px; border-radius: 11px; cursor: pointer; border: 1px solid var(--border);
+  background: rgba(255,255,255,.05); color: var(--text3); font-family: inherit; font-size: 11px;
+}
+
+/* Stepper */
+.stepper { display: flex; align-items: center; gap: 8px; }
+.stepper-btn {
+  width: 34px; height: 34px; border-radius: 17px; border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08); color: #fff; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-family: inherit;
+  transition: background .15s;
+}
+.stepper-btn:active { background: rgba(255,255,255,.16); }
+.stepper-val { font-family: 'DM Mono', monospace; font-size: 17px; font-weight: 500; min-width: 52px; text-align: center; }
+
+/* Range input */
+input[type=range] { -webkit-appearance: none; width: 100%; height: 5px; border-radius: 3px; background: rgba(255,255,255,.1); outline: none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: currentColor; cursor: pointer; }
+
+/* Number input */
+.num-input {
+  width: 100%; padding: 8px 11px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px; color: #fff; font-size: 14px; font-family: 'DM Mono', monospace; outline: none;
+}
+.num-input:focus { border-color: rgba(74,222,128,.4); }
+
+/* Date input */
+input[type=date] {
+  width: 100%; padding: 9px 11px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px; color: #fff; font-size: 14px; font-family: inherit; outline: none;
+  -webkit-appearance: none;
+}
+input[type=date]:focus { border-color: rgba(74,222,128,.4); }
+input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .5; }
+
+/* Sheet overlay */
+.sheet-overlay {
+  position: fixed; inset: 0; background: rgba(4,4,14,.93); z-index: 400;
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: fadeIn .2s ease;
+}
+.sheet {
+  width: 100%; max-width: 440px; background: #0c0c1c;
+  border-radius: 20px 20px 0 0; max-height: 93vh; overflow-y: auto;
+  border-top: 2px solid rgba(255,255,255,.08);
+  animation: slideUp .32s cubic-bezier(.22,1,.36,1);
+  -webkit-overflow-scrolling: touch;
+}
+.sheet::-webkit-scrollbar { display: none; }
+.sheet-handle { display: flex; justify-content: center; padding: 9px 0 4px; }
+.sheet-handle-bar { width: 32px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.1); }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Progress dots */
+.progress-dots { display: flex; gap: 6px; justify-content: center; }
+.dot { height: 6px; border-radius: 3px; background: rgba(255,255,255,.1); transition: all .3s; }
+.dot.active { background: var(--green); }
+
+/* Week row */
+.week-row {
+  padding: 11px 13px; border-radius: 13px; border: 1px solid var(--border);
+  background: rgba(255,255,255,.03); cursor: pointer; width: 100%;
+  text-align: left; font-family: inherit; transition: border-color .2s;
+  display: flex; align-items: center; gap: 9px; margin-bottom: 6px;
+}
+.week-row.current { border-color: rgba(74,222,128,.25); }
+
+/* Workout row */
+.wo-row {
+  padding: 9px 13px; margin: 2px 0; cursor: pointer;
+  border-radius: 0 11px 11px 0;
+  border-left: 3px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.02);
+  transition: background .12s;
+}
+.wo-row:active { background: rgba(255,255,255,.05); }
+
+/* Ring SVG */
+.ring-wrap { position: relative; display: inline-flex; }
+.ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; pointer-events: none; }
+
+/* Hour grid */
+.hour-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.hour-cell { text-align: center; }
+.hour-day { font-size: 8px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; }
+.hour-btn {
+  display: block; width: 100%; padding: 3px 0; font-size: 8px; font-weight: 700;
+  border-radius: 4px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.04);
+  color: var(--text3); cursor: pointer; font-family: inherit; margin-bottom: 2px;
+  transition: all .15s;
+}
+.hour-btn.sel-none { background: rgba(100,116,139,.2); border-color: #475569; color: #94a3b8; }
+.hour-btn.sel-low  { background: rgba(96,165,250,.15); border-color: #60a5fa55; color: #60a5fa; }
+.hour-btn.sel-med  { background: rgba(74,222,128,.15); border-color: #4ade8055; color: #4ade80; }
+.hour-btn.sel-high { background: rgba(245,158,11,.15); border-color: #f59e0b55; color: #f59e0b; }
+
+/* Adapt note */
+.adapt-note { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 10px; }
+
+/* Section label */
+.section-lbl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+/* Structure timeline */
+.timeline { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; margin-bottom: 12px; }
+
+/* Pace box */
+.pace-box { border-radius: 9px; padding: 11px 13px; margin-bottom: 7px; }
+
+/* Stat grid */
+.stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 16px; }
+.stat-cell { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 10px; padding: 10px 11px; }
+
+/* Scores bar */
+.score-bar { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; margin: 6px 0 4px; }
+.score-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+/* Select days toggle */
+.days-toggle { display: flex; gap: 6px; }
+.day-tog { flex: 1; padding: 12px 0; border-radius: 9px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text3); font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; text-align: center; }
+.day-tog.on { background: rgba(74,222,128,.12); border-color: rgba(74,222,128,.35); color: var(--green); }
+
+/* Goal btn */
+.goal-btn { padding: 15px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,.04); cursor: pointer; font-family: inherit; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; transition: all .15s; }
+.goal-btn.on { background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.35); }
+
+/* Chevron */
+.chev { color: var(--text3); font-size: 12px; transition: transform .2s; }
+.chev.open { transform: rotate(180deg); }
+
+/* Mini dots (week progress) */
+.mini-dots { display: flex; gap: 3px; }
+.mini-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.1); }
+
+/* Notification banner */
+.banner { padding: 10px 14px; border-radius: 11px; font-size: 13px; margin: 0 12px 10px; }
+
+/* Separator */
+.sep { text-align: center; color: rgba(255,255,255,.1); font-size: 13px; margin: 4px 0; }
+
+/* Block component */
+.struct-block { border-radius: 10px; margin-bottom: 3px; overflow: hidden; }
+.struct-block-inner { padding: 10px 13px; border-left: 3px solid; }
+
+/* Logged banner */
+.logged-banner { padding: 12px 14px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+/* RPE labels row */
+.rpe-labels { display: flex; justify-content: space-between; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Header (injected by JS) -->
+  <div class="header" id="header"></div>
+  <!-- Tab bar -->
+  <div class="tabbar" id="tabbar"></div>
+  <!-- Main content -->
+  <div class="scroll content" id="main"></div>
+  <!-- Sheet overlay -->
+  <div class="sheet-overlay" id="sheet-overlay" style="display:none"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const STORAGE_KEY = 'adaptiverun_v1';
+
+function persistState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      setup: STATE.setup,
+      weeks: STATE.weeks,
+      acwr:  STATE.acwr,
+      tab:   STATE.tab,
+    }));
+  } catch(e) { console.warn('Save failed', e); }
+}
+
+function loadPersistedState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved.setup || !saved.weeks || !saved.weeks.length) return false;
+    STATE.setup    = saved.setup;
+    STATE.weeks    = saved.weeks;
+    STATE.acwr     = saved.acwr || { acute:0, chronic:120, ratio:0 };
+    STATE.tab      = saved.tab  || 'schema';
+    // Re-open current week
+    const now = Date.now();
+    STATE.openWeek = STATE.weeks.findIndex(w => w.startDate <= now && w.startDate+7*864e5 > now);
+    if (STATE.openWeek < 0) STATE.openWeek = 0;
+    return true;
+  } catch(e) { console.warn('Load failed', e); return false; }
+}
+
+function clearPersistedState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+}
+
+const STATE = {
+  setup: null,     // null = show setup screen
+  weeks: [],
+  acwr: { acute: 0, chronic: 120, ratio: 0 },
+  tab: 'schema',
+  openWeek: -1,
+  sheet: null,     // workout object currently open
+  setupStep: 0,
+};
+
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const TYPES = {
+  easyRun:  { label:'Herstelloop',      icon:'🏃', color:'#4ade80', baseRPE:3   },
+  longRun:  { label:'Lange Duurloop',   icon:'🛤️', color:'#60a5fa', baseRPE:5.5 },
+  tempoRun: { label:'Tempolopen',       icon:'⚡', color:'#f59e0b', baseRPE:7   },
+  interval: { label:'Intervaltraining', icon:'🔥', color:'#f87171', baseRPE:8   },
+  restDay:  { label:'Rustdag',          icon:'😴', color:'#475569', baseRPE:1   },
+};
+const RPE_LABELS = ['','Heel licht','Licht','Matig','Enigszins','Middelzwaar','Zwaar','Harder','Heel zwaar','Extreem','Maximum'];
+const DAY_NAMES  = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const fp = s => s > 0 ? `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}` : '--:--';
+
+// ═══════════════════════════════════════════
+// PLAN ENGINE
+// ═══════════════════════════════════════════
+function computeACWR(all) {
+  const now = Date.now(), done = all.filter(w => w.done && w.loggedMin);
+  const acute   = done.filter(w => now-w.date < 7*864e5).reduce((s,w) => s+w.loggedRPE*w.loggedMin, 0);
+  const chronic = Math.max(120, done.filter(w => now-w.date < 28*864e5).reduce((s,w) => s+w.loggedRPE*w.loggedMin, 0)/4);
+  return { acute, chronic, ratio: acute/chronic };
+}
+
+// Given hours available per day [0..7], pick best days for each training type
+// Priority: heaviest training → day with most time; rest on 0h days
+function assignWorkoutsToAvailability(availHours, trainingDays, isTaper, isRecov) {
+  // availHours: array of 7 floats (Ma=0..Zo=6)
+  // trainingDays: number of training days user wants
+
+  // Training type durations (minutes) and priority weight
+  const types = [
+    { type: 'longRun',  minHours: 1.0, weight: 4 },
+    { type: 'interval', minHours: 0.75, weight: 3 },
+    { type: 'tempoRun', minHours: 0.75, weight: 2 },
+    { type: 'easyRun',  minHours: 0.5,  weight: 1 },
+  ];
+
+  // Determine how many of each type based on trainingDays
+  let schedule = [];
+  if (trainingDays <= 3) {
+    schedule = ['longRun', 'interval', 'easyRun'].slice(0, trainingDays);
+  } else if (trainingDays === 4) {
+    schedule = ['longRun', 'interval', 'tempoRun', 'easyRun'];
+  } else if (trainingDays === 5) {
+    schedule = ['longRun', 'interval', 'tempoRun', 'easyRun', 'easyRun'];
+  } else {
+    schedule = ['longRun', 'interval', 'tempoRun', 'easyRun', 'easyRun', 'easyRun'];
+  }
+  if (isTaper) schedule = schedule.filter(t => t !== 'interval').slice(0, Math.max(2, trainingDays-2));
+  if (isRecov)  schedule = schedule.filter(t => t !== 'interval' && t !== 'tempoRun').concat(['easyRun']).slice(0, Math.max(2, trainingDays-1));
+
+  // Sort days by hours available (descending)
+  const sortedDays = [...availHours.map((h,i) => ({h,i}))]
+    .sort((a,b) => b.h - a.h);
+
+  // Sort schedule by weight (heaviest first)
+  const typeWeights = { longRun:4, interval:3, tempoRun:2, easyRun:1 };
+  schedule.sort((a,b) => typeWeights[b] - typeWeights[a]);
+
+  const result = Array(7).fill('restDay');
+
+  // Assign each training type to the best available day
+  let schedIdx = 0;
+  for (let di = 0; di < sortedDays.length && schedIdx < schedule.length; di++) {
+    const { h, i } = sortedDays[di];
+    if (h >= 0.5) {
+      result[i] = schedule[schedIdx++];
+    }
+  }
+
+  return result;
+}
+
+function buildWeekWorkouts(wi, weekStart, lrKmBase, pf, isRecov, isTaper, availHours, trainingDays, pace, total, linearKm, currentPaceSec, prog) {
+  // linearKm = raw weekly km target (no pf yet)
+  // lrKmBase  = raw LSD km target (no pf yet)
+  // pf        = week progression factor — applied ONCE here
+
+  const template = assignWorkoutsToAvailability(availHours, trainingDays, isTaper, isRecov);
+
+  // Progressive pace: interpolate from currentPaceSec → targetPaceSec over 85% of plan
+  const cp = currentPaceSec || pace;
+  const basePace = isTaper
+    ? pace
+    : Math.round(cp + (pace - cp) * Math.min((prog||0) / 0.85, 1.0));
+
+  const paceFor = {
+    longRun:  Math.round(basePace * 1.20),   // Z2 duurloop: 20% slower than base
+    easyRun:  Math.round(basePace * 1.25),   // Z1 herstel: 25% slower
+    tempoRun: Math.round(basePace * 0.97),   // Z4 tempo: lactaatdrempel
+    interval: Math.round(basePace * 0.85),   // Z5 VO₂max
+    restDay:  0,
+  };
+
+  // Session weight splits for non-LSD sessions
+  const sessionWeights = { longRun:1.4, interval:1.0, tempoRun:0.85, easyRun:0.65 };
+  const totalWeight = template.reduce((s, t) => s + (sessionWeights[t]||0), 0) || 1;
+  // Weekly km after applying the progression factor
+  const weekKm = linearKm * pf;
+  const kmPerUnit = weekKm / totalWeight;
+
+  return template.map((type, di) => {
+    const date = new Date(weekStart); date.setDate(date.getDate()+di);
+    const avail = availHours[di];
+    const targetPace = paceFor[type]||0;
+    const targetRPE = TYPES[type].baseRPE;
+
+    if (type === 'restDay') {
+      return {id:`w${wi}d${di}`,type,day:DAY_NAMES[di],date:date.getTime(),km:0,min:0,targetPace:0,targetRPE,reps:null,blocks:null,availHours:avail,done:false,missed:false,loggedRPE:null,loggedKm:null,loggedMin:null,adapted:false,adaptNote:null,weekNumber:wi+1,totalWeeks:total};
+    }
+
+    // Base km: LSD uses its own curve * pf, others from weekly split
+    let km = (type === 'longRun') ? lrKmBase * pf : kmPerUnit * (sessionWeights[type]||1);
+
+    // Taper/recovery on top (these weeks already have low pf, but clip further)
+    if (isTaper) km *= 0.85;
+    if (isRecov) km *= 0.85;
+
+    // Floor: sensible minimum per session
+    const minKm = {longRun:5, interval:4, tempoRun:4, easyRun:3};
+    km = Math.max(km, minKm[type]||3);
+
+    // Time cap: avail is in HOURS, pace in sec/km → maxKm = hours*3600*efficiency / pace
+    if (avail > 0 && targetPace > 0) {
+      const maxKm = (avail * 3600 * 0.85) / targetPace;
+      km = Math.min(km, maxKm);
+    }
+    km = Math.round(km * 10) / 10;
+    const min = km > 0 ? Math.round(km * targetPace / 60) : 0;
+    const reps = type==='interval' ? (wi<=1?4:wi<=3?5:6) : null;
+
+    // Build blocks for diagram — label=extra info shown below zone, zoneName=zone description
+    const wuP = Math.round(basePace*1.25), cdP = Math.round(basePace*1.25);
+    let blocks = null;
+    if (type === 'interval') {
+      const intP = paceFor.interval, recP = Math.round(basePace*1.45);
+      blocks = [{label:'Warming-up',km:2,pace:wuP,zone:'Z1',zoneName:'Herstel',color:'#64748b',type:'wu'}];
+      for (let i=0;i<reps;i++) {
+        blocks.push({label:'',km:1,pace:intP,zone:'Z5',zoneName:'VO₂max',color:'#f87171',type:'int'});
+        if (i<reps-1) blocks.push({label:'',km:0.3,pace:recP,zone:'Z1',zoneName:'Herstel',color:'#475569',type:'rec'});
+      }
+      blocks.push({label:'Cooling-down',km:1.5,pace:cdP,zone:'Z1',zoneName:'Herstel',color:'#64748b',type:'cd'});
+    } else if (type === 'tempoRun') {
+      const tpP = paceFor.tempoRun, tKm = Math.max(2, Math.round((km-3.5)*10)/10);
+      blocks = [
+        {label:'Warming-up',km:2,pace:wuP,zone:'Z1',zoneName:'Herstel',color:'#64748b',type:'wu'},
+        {label:'',km:tKm,pace:tpP,zone:'Z4',zoneName:'Tempo',color:'#f59e0b',type:'tempo'},
+        {label:'Cooling-down',km:1.5,pace:cdP,zone:'Z1',zoneName:'Herstel',color:'#64748b',type:'cd'},
+      ];
+    } else if (type === 'longRun') {
+      blocks = [{label:'',km,pace:targetPace,zone:'Z2',zoneName:'Duurloop',color:'#60a5fa',type:'lsd'}];
+    } else if (type === 'easyRun') {
+      blocks = [{label:'',km,pace:targetPace,zone:'Z1',zoneName:'Herstel',color:'#4ade80',type:'easy'}];
+    }
+
+    return {id:`w${wi}d${di}`,type,day:DAY_NAMES[di],date:date.getTime(),km,min,targetPace,targetRPE,reps,blocks,availHours:avail,done:false,missed:false,loggedRPE:null,loggedKm:null,loggedMin:null,adapted:false,adaptNote:null,weekNumber:wi+1,totalWeeks:total};
+  });
+}
+
+function buildPlan(s) {
+  const wt = Math.max(8, Math.ceil((s.raceDate - Date.now()) / (7*864e5)));
+
+  // Peak weekly km target: based on goal distance
+  // Marathon ~65km/week peak, HM ~50, 10k ~40, 5k ~30
+  const peakKmTargets = { 5: 30, 10: 40, 21.1: 55, 42.2: 70 };
+  const peakKm = peakKmTargets[s.goalDist] || (s.goalDist * 1.5);
+  // Start from user's current weekly km, build up to peak
+  const startKm = Math.max(s.currentKm, 5);
+
+  return Array.from({length: wt}, (_, wi) => {
+    const prog = wi / Math.max(wt-1, 1);
+    const isTaper = wi >= wt-2, isPeak = !isTaper && wi === Math.floor(wt*0.7);
+    const isRecov = !isTaper && !isPeak && wi > 0 && wi%4 === 3;
+
+    const pf = isTaper ? 0.65 : isPeak ? 1.0 : isRecov ? 0.75 : 0.85 + prog*0.15;
+    const theme = isTaper ? 'Tapering' : isPeak ? 'Piekweek' : isRecov ? 'Herstelweek' : wi===0 ? 'Basisopbouw' : 'Opbouw';
+
+    // Weekly volume: linear progression from startKm to peakKm (NO pf yet – applied inside)
+    const linearKm = startKm + (peakKm - startKm) * Math.min(prog / 0.8, 1);
+
+    // LSD grows from currentLongRun to ~90% of goal dist (pf applied inside)
+    const lrKmRaw = Math.min(
+      s.currentLongRun + (s.goalDist*0.9 - s.currentLongRun) * Math.min(prog/0.8, 1),
+      s.goalDist * 0.95
+    );
+
+    const ws = new Date(); ws.setHours(0,0,0,0);
+    ws.setDate(ws.getDate() - ws.getDay() + 1 + wi*7);
+    return {
+      id: wi, weekNumber: wi+1, theme, startDate: ws.getTime(),
+      workouts: buildWeekWorkouts(wi, ws, lrKmRaw, pf, isRecov, isTaper, s.availHours, s.trainingDays, s.targetPaceSec, wt, linearKm, s.currentPaceSec||s.targetPaceSec, prog)
+    };
+  });
+}
+
+function applyAdaptations(weeks, setup) {
+  const flat = weeks.flatMap(w => w.workouts);
+  const acwr = computeACWR(flat);
+  const nw = weeks.map(wk => ({...wk, workouts: wk.workouts.map(wo => ({...wo}))}));
+  const nf = nw.flatMap(w => w.workouts);
+  const intDone = nf.filter(w => (w.type==='interval'||w.type==='tempoRun') && w.done);
+  const last3 = intDone.slice(-3);
+  const allLight = last3.length===3 && last3.every(w => (w.loggedRPE - w.targetRPE) <= -1.5);
+  const future = nf.filter(w => !w.done && !w.missed && w.type !== 'restDay');
+  const ni = future.find(w => w.type==='interval' || w.type==='tempoRun');
+  const nl = future.find(w => w.type==='longRun');
+  const ll = [...nf].filter(w => w.done).sort((a,b) => b.date-a.date)[0];
+  if (ll) {
+    const d = ll.loggedRPE - ll.targetRPE;
+    if ((ll.type==='interval'||ll.type==='tempoRun') && d>=2 && ni) {
+      ni.targetRPE = Math.max(5, ni.targetRPE-1);
+      ni.km = Math.round(ni.km*0.85*10)/10;
+      ni.min = Math.round(ni.km*ni.targetPace/60);
+      ni.adapted = true; ni.adaptNote = `⬇️ Verzacht: +${d.toFixed(1)} pt te zwaar`;
+    }
+    if (ll.type==='longRun' && d>=2 && nl) {
+      nl.km = Math.round(nl.km*0.9*10)/10;
+      nl.min = Math.round(nl.km*nl.targetPace/60);
+      nl.adapted = true; nl.adaptNote = `⬇️ Ingekort: +${d.toFixed(1)} pt te zwaar`;
+    }
+    if (allLight && ni) {
+      ni.km = Math.round(ni.km*1.1*10)/10;
+      ni.min = Math.round(ni.km*ni.targetPace/60);
+      ni.adapted = true; ni.adaptNote = '⬆️ Uitgebreid: 3× lichter dan verwacht';
+    }
+  }
+  if (acwr.ratio >= 1.5) {
+    future.slice(0,2).forEach(w => {
+      if (w.type !== 'restDay') {
+        w.km = Math.round(w.km*0.75*10)/10; w.min = Math.round(w.km*w.targetPace/60);
+        w.adapted = true; w.adaptNote = `⚠️ ACWR ${acwr.ratio.toFixed(2)}: belasting verlaagd`;
+      }
+    });
+  }
+  return { weeks: nw, acwr };
+}
+
+function rebuildFuture(oldWeeks, ns) {
+  const now = Date.now(), fresh = buildPlan(ns);
+  return fresh.map((fw, wi) => {
+    const old = oldWeeks[wi];
+    if (!old) return fw;
+    if (fw.startDate + 7*864e5 < now) return old;
+    return {...fw, workouts: fw.workouts.map((fw2, di) => {
+      const ow = old.workouts[di];
+      return (ow && (ow.done || ow.missed)) ? ow : fw2;
+    })};
+  });
+}
+
+// ═══════════════════════════════════════════
+// SETUP FORM STATE
+// ═══════════════════════════════════════════
+const SETUP_DEFAULTS = {
+  goalDist: 21.1,
+  targetPaceMin: 5, targetPaceSec2: 40,
+  currentPaceMin: 6, currentPaceSec2: 30,  // current easy run pace
+  currentKm: 25, currentLongRun: 12,
+  trainingDays: 4,
+  availHours: [0.75, 1, 0, 1, 0.75, 1.5, 0], // Ma..Zo
+  bodyWeight: 70,
+  raceDateStr: '',
+};
+let setupForm = {...SETUP_DEFAULTS};
+
+// ═══════════════════════════════════════════
+// RENDER HELPERS
+// ═══════════════════════════════════════════
+function tag(color, text) {
+  return `<span class="tag" style="color:${color};border-color:${color}44;background:${color}18">${text}</span>`;
+}
+
+function stepper(id, value, step, min, max, unit='') {
+  return `
+    <div class="stepper">
+      <button class="stepper-btn" onclick="stepperChange('${id}',-${step},${min},${max})">−</button>
+      <span class="stepper-val" id="sv-${id}">${value}${unit}</span>
+      <button class="stepper-btn" onclick="stepperChange('${id}',${step},${min},${max})">+</button>
+    </div>`;
+}
+
+window.stepperChange = function(id, delta, min, max) {
+  const el = document.getElementById('sv-'+id);
+  if (!el) return;
+  let v = parseFloat(el.dataset.val !== undefined ? el.dataset.val : el.textContent);
+  v = Math.max(min, Math.min(max, +(v + delta).toFixed(2)));
+  el.dataset.val = v;
+  // determine unit
+  const unit = el.textContent.replace(/[\d.]/g,'');
+  el.textContent = v + (unit||'');
+  // update setupForm
+  const keyMap = {'pace-min':'targetPaceMin','pace-sec':'targetPaceSec2','cur-pace-min':'currentPaceMin','cur-pace-sec':'currentPaceSec2','cur-km':'currentKm','cur-lr':'currentLongRun','weight':'bodyWeight','train-days':'trainingDays'};
+  if (keyMap[id]) {
+    setupForm[keyMap[id]] = v;
+    // live update finish time if pace changed
+    if (id==='pace-min'||id==='pace-sec') updateFinishTime();
+    if (id==='train-days') renderSetupStep();
+  }
+};
+
+function updateFinishTime() {
+  const el = document.getElementById('finish-time');
+  if (!el) return;
+  const ps = setupForm.targetPaceMin*60 + setupForm.targetPaceSec2;
+  const ts = Math.round(ps * setupForm.goalDist);
+  el.textContent = `${Math.floor(ts/3600)}:${String(Math.floor((ts%3600)/60)).padStart(2,'0')}:${String(ts%60).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════════
+// SETUP SCREEN
+// ═══════════════════════════════════════════
+function renderSetup() {
+  document.getElementById('header').innerHTML = `
+    <div>
+      <div class="font-display" style="font-size:20px;font-weight:900;letter-spacing:1px;color:var(--green);line-height:1">ADAPTIVE<span style="color:rgba(255,255,255,.15)">RUN</span></div>
+      <div style="font-size:13px;color:var(--text3);margin-top:1px">Adaptief hardloopschema</div>
+    </div>`;
+  document.getElementById('tabbar').innerHTML = '';
+  renderSetupStep();
+}
+
+const SETUP_STEPS = ['Doel','Tempo','Niveau','Beschikbaarheid','Planning'];
+
+function renderSetupStep() {
+  const step = STATE.setupStep;
+  const main = document.getElementById('main');
+
+  const dots = SETUP_STEPS.map((s,i) =>
+    `<div class="dot ${i<=step?'active':''}" style="width:${i===step?20:6}px"></div>`
+  ).join('');
+
+  let content = '';
+
+  if (step === 0) {
+    // Goal distance
+    content = `
+      <h2 class="font-display" style="font-size:24px;font-weight:800;letter-spacing:.5px;margin-bottom:4px">Wat is je doel?</h2>
+      <p style="font-size:15px;color:var(--text2);margin-bottom:20px">Kies je wedstrijdafstand</p>
+      ${[[5,'5 km','Korte race'],[10,'10 km','Populaire afstand'],[21.1,'Halve Marathon','21.1 km'],[42.2,'Marathon','42.2 km']].map(([d,l,s]) => `
+        <button class="goal-btn ${setupForm.goalDist===d?'on':''}" onclick="selectGoal(${d})">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:${setupForm.goalDist===d?'var(--green)':'var(--text)'}">${l}</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:1px">${s}</div>
+          </div>
+          ${setupForm.goalDist===d?'<span style="color:var(--green);font-size:16px">✓</span>':''}
+        </button>`).join('')}`;
+  }
+
+  else if (step === 1) {
+    // Target pace
+    const ps = setupForm.targetPaceMin*60 + setupForm.targetPaceSec2;
+    const ts = Math.round(ps * setupForm.goalDist);
+    const finish = `${Math.floor(ts/3600)}:${String(Math.floor((ts%3600)/60)).padStart(2,'0')}:${String(ts%60).padStart(2,'0')}`;
+    content = `
+      <h2 class="font-display" style="font-size:24px;font-weight:800;letter-spacing:.5px;margin-bottom:4px">Doeltempo</h2>
+      <p style="font-size:15px;color:var(--text2);margin-bottom:20px">Gewenst tempo per kilometer</p>
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:14px">
+          <div style="text-align:center">
+            <div style="font-size:13px;color:var(--text3);margin-bottom:8px">minuten</div>
+            ${stepper('pace-min', setupForm.targetPaceMin, 1, 3, 12)}
+          </div>
+          <div style="font-size:28px;color:rgba(255,255,255,.2);font-weight:300">:</div>
+          <div style="text-align:center">
+            <div style="font-size:13px;color:var(--text3);margin-bottom:8px">seconden</div>
+            ${stepper('pace-sec', setupForm.targetPaceSec2, 5, 0, 55)}
+          </div>
+        </div>
+        <div style="text-align:center;padding:9px;background:rgba(74,222,128,.06);border-radius:9px;border:1px solid rgba(74,222,128,.15)">
+          <span style="font-size:14px;color:var(--text3)">Eindtijd: </span>
+          <span id="finish-time" class="font-mono" style="font-size:15px;font-weight:500;color:var(--green)">${finish}</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.7px;font-weight:700">Snelle selectie</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${[[4,0],[4,30],[5,0],[5,30],[6,0],[6,30]].map(([m,s]) => {
+          const active = setupForm.targetPaceMin===m && setupForm.targetPaceSec2===s;
+          return `<button onclick="selectPace(${m},${s})" style="padding:10px;border-radius:9px;background:${active?'rgba(74,222,128,.1)':'rgba(255,255,255,.03)'};border:1px solid ${active?'rgba(74,222,128,.3)':'rgba(255,255,255,.06)'};color:${active?'var(--green)':'var(--text3)'};font-family:inherit;cursor:pointer;font-size:15px">${m}:${String(s).padStart(2,'0')}/km</button>`;
+        }).join('')}
+      </div>`;
+  }
+
+  else if (step === 2) {
+    // Current fitness
+    content = `
+      <h2 class="font-display" style="font-size:26px;font-weight:800;letter-spacing:.5px;margin-bottom:4px">Huidig niveau</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Dit calibreert je schema nauwkeurig</p>
+      ${[
+        ['Km per week (nu)', 'cur-km', setupForm.currentKm, 1, 5, 150, 'km'],
+        ['Langste recente duurloop', 'cur-lr', setupForm.currentLongRun, 0.5, 1, 40, 'km'],
+        ['Lichaamsgewicht', 'weight', setupForm.bodyWeight, 1, 40, 150, 'kg'],
+      ].map(([lbl, id, val, step2, min, max, unit]) => `
+        <div class="card" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;color:var(--text2)">${lbl}</div>
+          ${stepper(id, val, step2, min, max, unit)}
+        </div>`).join('')}
+      <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px;font-weight:700">🏃 Tempo laatste duurloop</div>
+      <div class="card" style="margin-bottom:10px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Jouw huidige looptempo — het schema bouwt hier naartoe op naar je doeltempo.</div>
+        <div style="display:flex;align-items:center;justify-content:space-around">
+          <div style="text-align:center">
+            <div style="font-size:13px;color:var(--text3);margin-bottom:6px">min</div>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="stepChange('cur-pace-min',-1,3,12)">−</button>
+              <span class="stepper-val font-mono" id="sv-cur-pace-min" data-val="${setupForm.currentPaceMin}">${setupForm.currentPaceMin}</span>
+              <button class="stepper-btn" onclick="stepChange('cur-pace-min',1,3,12)">+</button>
+            </div>
+          </div>
+          <div style="font-size:26px;color:rgba(255,255,255,.2)">:</div>
+          <div style="text-align:center">
+            <div style="font-size:13px;color:var(--text3);margin-bottom:6px">sec</div>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="stepChange('cur-pace-sec',-5,0,55)">−</button>
+              <span class="stepper-val font-mono" id="sv-cur-pace-sec" data-val="${setupForm.currentPaceSec2}">${setupForm.currentPaceSec2}</span>
+              <button class="stepper-btn" onclick="stepChange('cur-pace-sec',5,0,55)">+</button>
+            </div>
+          </div>
+          <div style="padding:8px 14px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);border-radius:9px;text-align:center">
+            <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--green)">${setupForm.currentPaceMin}:${String(setupForm.currentPaceSec2).padStart(2,'0')}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">/km nu</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 13px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.12);border-radius:10px;font-size:13px;color:var(--text3);line-height:1.6">
+        💡 Schema begint bij <b style="color:var(--green)">${setupForm.currentKm} km/week</b> · tempo loopt op van <b style="color:var(--blue)">${setupForm.currentPaceMin}:${String(setupForm.currentPaceSec2).padStart(2,'0')}</b> naar <b style="color:var(--green)">${setupForm.targetPaceMin}:${String(setupForm.targetPaceSec2).padStart(2,'0')}</b>/km
+      </div>`;
+  }
+
+  else if (step === 3) {
+    // Availability - hours per day
+    const hourOptions = [0, 0.5, 1, 1.5, 2, 3];
+    const hourLabels  = ['—', '30m', '1u', '1.5u', '2u', '3u'];
+    const hClass = h => h===0?'sel-none':h<=0.5?'sel-low':h<=1?'sel-med':'sel-high';
+
+    content = `
+      <h2 class="font-display" style="font-size:24px;font-weight:800;letter-spacing:.5px;margin-bottom:4px">Beschikbaarheid</h2>
+      <p style="font-size:15px;color:var(--text2);margin-bottom:16px">Hoeveel tijd heb je per dag beschikbaar?</p>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.7px;font-weight:700">Aantal trainingsdagen</div>
+        <div class="days-toggle">
+          ${[2,3,4,5,6].map(d => `<button class="day-tog ${setupForm.trainingDays===d?'on':''}" onclick="selectTrainDays(${d})">${d}</button>`).join('')}
+        </div>
+      </div>
+
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.7px;font-weight:700">Tijd per dag</div>
+      <div class="card" style="padding:12px">
+        <div class="hour-grid">
+          ${DAY_NAMES.map((day, di) => `
+            <div class="hour-cell">
+              <div class="hour-day">${day}</div>
+              ${hourOptions.map((h, hi) => `
+                <button class="hour-btn ${setupForm.availHours[di]===h?hClass(h):''}" onclick="setAvailHour(${di},${h})">${hourLabels[hi]}</button>
+              `).join('')}
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-top:10px;text-align:center">
+        ${setupForm.availHours.filter(h=>h>0).length} traindagen · ${setupForm.availHours.reduce((s,h)=>s+h,0).toFixed(1)}u beschikbaar per week
+      </div>`;
+  }
+
+  else if (step === 4) {
+    // Race date
+    const d = new Date(); d.setDate(d.getDate()+70);
+    if (!setupForm.raceDateStr) setupForm.raceDateStr = d.toISOString().split('T')[0];
+    const dL = setupForm.raceDateStr ? Math.max(0, Math.ceil((new Date(setupForm.raceDateStr)-new Date())/864e5)) : 0;
+    content = `
+      <h2 class="font-display" style="font-size:24px;font-weight:800;letter-spacing:.5px;margin-bottom:4px">Datum & Planning</h2>
+      <p style="font-size:15px;color:var(--text2);margin-bottom:20px">Wanneer is je wedstrijd?</p>
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:13px;color:var(--text3);margin-bottom:8px">Wedstrijddatum</div>
+        <input type="date" value="${setupForm.raceDateStr}" id="race-date-input" onchange="setRaceDate(this.value)" style="width:100%;padding:9px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none">
+        ${dL>0?`<div style="font-size:13px;color:var(--green);margin-top:8px">Nog ${dL} dagen · ${Math.max(4,Math.ceil(dL/7))} weken schema</div>`:''}
+      </div>
+      <div style="padding:12px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.12);border-radius:12px;font-size:14px;color:var(--text2);line-height:1.7">
+        <div style="color:var(--green);font-weight:700;margin-bottom:6px">📋 Jouw schema wordt:</div>
+        <div>🏁 Doel: ${setupForm.goalDist}km op ${fp(setupForm.targetPaceMin*60+setupForm.targetPaceSec2)}/km</div>
+        <div>🗓️ ${setupForm.trainingDays} trainingsdagen/week</div>
+        <div>⏱️ Max ${Math.max(...setupForm.availHours)}u op je drukste dag</div>
+        <div>📍 Vanaf huidig: ${setupForm.currentLongRun}km lange duurloop</div>
+      </div>`;
+  }
+
+  main.innerHTML = `
+    <div style="padding:24px 16px">
+      <div class="progress-dots" style="margin-bottom:28px">${dots}</div>
+      ${content}
+      <div style="display:flex;gap:8px;margin-top:24px">
+        ${step>0?`<button class="btn-secondary" onclick="setupPrev()">← Terug</button>`:''}
+        ${step<SETUP_STEPS.length-1
+          ? `<button class="btn-primary" onclick="setupNext()" style="flex:1">Volgende →</button>`
+          : `<button class="btn-primary" onclick="startApp()" style="flex:1">Schema Genereren →</button>`}
+      </div>
+    </div>`;
+
+  // Re-init stepper values from data attributes after render
+  document.querySelectorAll('.stepper-val').forEach(el => { el.dataset.val = parseFloat(el.textContent); });
+}
+
+window.selectGoal = d => { setupForm.goalDist = d; renderSetupStep(); };
+window.selectPace = (m,s) => { setupForm.targetPaceMin=m; setupForm.targetPaceSec2=s; renderSetupStep(); };
+window.selectTrainDays = d => { setupForm.trainingDays=d; renderSetupStep(); };
+window.setAvailHour = (di, h) => { setupForm.availHours[di]=h; renderSetupStep(); };
+window.setRaceDate = v => { setupForm.raceDateStr=v; renderSetupStep(); };
+window.setupNext = () => { STATE.setupStep = Math.min(4, STATE.setupStep+1); renderSetupStep(); };
+window.setupPrev = () => { STATE.setupStep = Math.max(0, STATE.setupStep-1); renderSetupStep(); };
+window.startApp = () => {
+  const setup = {
+    goalDist: setupForm.goalDist,
+    targetPaceSec: setupForm.targetPaceMin*60 + setupForm.targetPaceSec2,
+    currentPaceSec: setupForm.currentPaceMin*60 + setupForm.currentPaceSec2,
+    currentKm: setupForm.currentKm,
+    currentLongRun: setupForm.currentLongRun,
+    currentPaceSec: setupForm.currentPaceMin*60 + setupForm.currentPaceSec2,
+    trainingDays: setupForm.trainingDays,
+    availHours: [...setupForm.availHours],
+    bodyWeight: setupForm.bodyWeight,
+    raceDate: new Date(setupForm.raceDateStr).getTime(),
+  };
+  STATE.setup = setup;
+  const { weeks, acwr } = applyAdaptations(buildPlan(setup), setup);
+  STATE.weeks = weeks; STATE.acwr = acwr;
+  // Open current week
+  const now = Date.now();
+  STATE.openWeek = weeks.findIndex(w => w.startDate <= now && w.startDate+7*864e5 > now);
+  if (STATE.openWeek < 0) STATE.openWeek = 0;
+  STATE.tab = 'schema';
+  renderApp();
+  persistState();
+};
+
+// ═══════════════════════════════════════════
+// APP SHELL
+// ═══════════════════════════════════════════
+function renderApp() {
+  const s = STATE.setup;
+  const dL = Math.max(0, Math.ceil((s.raceDate - Date.now()) / 864e5));
+  const ac = STATE.acwr.ratio > 1.5 ? '#ef4444' : STATE.acwr.ratio > 1.3 ? '#f59e0b' : '#4ade80';
+
+  document.getElementById('header').innerHTML = `
+    <div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="font-display" style="font-size:20px;font-weight:900;letter-spacing:1px;color:var(--green)">ADAPTIVE<span style="color:rgba(255,255,255,.15)">RUN</span></div>
+        <span style="font-size:13px;color:rgba(255,255,255,.4);padding:2px 8px;background:rgba(255,255,255,.05);border-radius:8px;border:1px solid rgba(255,255,255,.07)">${s.goalDist}km</span>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.35);margin-top:2px">Nog ${dL} dagen · ${fp(s.targetPaceSec)}/km doel</div>
+    </div>
+    <div style="padding:4px 10px;border-radius:12px;background:${ac}18;border:1px solid ${ac}35;font-size:13px;font-weight:700;color:${ac}" class="font-mono">ACWR ${STATE.acwr.ratio.toFixed(2)}</div>`;
+
+  document.getElementById('tabbar').innerHTML =
+    [['schema','📋','Schema'],['niveau','📊','Niveau'],['instellingen','⚙️','Instellingen']].map(([id,ic,lbl]) =>
+      `<button class="tab-btn ${STATE.tab===id?'active':''}" onclick="switchTab('${id}')">${ic} ${lbl}</button>`
+    ).join('');
+
+  renderTab();
+}
+
+window.switchTab = id => { STATE.tab = id; renderApp(); persistState(); };
+
+function renderTab() {
+  if (STATE.tab === 'schema')       renderSchemaTab();
+  else if (STATE.tab === 'niveau')  renderNiveauTab();
+  else if (STATE.tab === 'instellingen') renderInstellingenTab();
+}
+
+// ═══════════════════════════════════════════
+// SCHEMA TAB
+// ═══════════════════════════════════════════
+function renderSchemaTab() {
+  const { weeks, acwr } = STATE;
+  let html = '<div style="padding:10px 12px 0">';
+
+  if (acwr.ratio >= 1.3) {
+    const isHigh = acwr.ratio >= 1.5;
+    html += `<div class="banner" style="background:${isHigh?'rgba(239,68,68,.08)':'rgba(245,158,11,.08)'};border:1px solid ${isHigh?'rgba(239,68,68,.25)':'rgba(245,158,11,.25)'};color:${isHigh?'#f87171':'#f59e0b'}">
+      ${isHigh?`⚠️ Hoge belasting (ACWR ${acwr.ratio.toFixed(2)}). Schema verzacht.`:`🔶 Stijgende belasting (ACWR ${acwr.ratio.toFixed(2)}). Let op herstel.`}
+    </div>`;
+  }
+
+  const now = Date.now();
+  weeks.forEach((wk, wi) => {
+    const isOpen = STATE.openWeek === wi;
+    const isCur = wk.startDate <= now && wk.startDate+7*864e5 > now;
+    const nr = wk.workouts.filter(w => w.type !== 'restDay');
+    const doneC = nr.filter(w => w.done).length;
+    const totalKm = nr.reduce((s,w) => s+w.km, 0).toFixed(0);
+
+    const miniDots = nr.map(w =>
+      `<div class="mini-dot" style="background:${w.done?TYPES[w.type].color:w.missed?'#1e2535':'rgba(255,255,255,.1)'}"></div>`
+    ).join('');
+
+    html += `
+      <button class="week-row ${isCur?'current':''}" onclick="toggleWeek(${wi})">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+            <span class="font-display" style="font-size:16px;font-weight:800;letter-spacing:.5px">WEEK ${wk.weekNumber}</span>
+            ${isCur?`<span style="padding:2px 7px;border-radius:10px;font-size:13px;font-weight:700;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)">NU</span>`:''}
+            <span style="font-size:15px;color:var(--text3)">${wk.theme}</span>
+          </div>
+          <div style="font-size:15px;color:var(--text3)">${doneC}/${nr.length} · ${totalKm}km gepland</div>
+        </div>
+        <div class="mini-dots">${miniDots}</div>
+        <span class="chev ${isOpen?'open':''}">▼</span>
+      </button>`;
+
+    if (isOpen) {
+      wk.workouts.forEach(wo => {
+        const t = TYPES[wo.type];
+        const isRest = wo.type === 'restDay';
+        html += `
+          <div class="wo-row" onclick="openSheet('${wo.id}')"
+            style="border-left-color:${wo.done?t.color:wo.missed?'#475569':'rgba(255,255,255,.07)'};opacity:${wo.missed?0.5:1};background:${wo.done?'rgba(74,222,128,.03)':wo.missed?'rgba(255,255,255,.01)':'rgba(255,255,255,.02)'}">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="font-size:18px;min-width:24px;text-align:center">${t.icon}</span>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                  <span style="font-size:14px;font-weight:600;color:${wo.done?'#fff':'rgba(255,255,255,.8)'}">${wo.day} — ${t.label}</span>
+                  ${wo.done?`<span style="font-size:14px;color:${t.color}">✓</span>`:''}
+                  ${wo.missed?`<span style="padding:2px 6px;border-radius:7px;font-size:13px;font-weight:700;background:rgba(100,116,139,.15);color:#94a3b8">Gemist</span>`:''}
+                  ${wo.adapted?`<span style="padding:2px 6px;border-radius:7px;font-size:13px;font-weight:700;background:rgba(167,139,250,.12);color:var(--purple)">🔄</span>`:''}
+                </div>
+                <div style="font-size:14px;color:var(--text3);margin-top:2px;display:flex;gap:10px">
+                  ${!isRest?`<span style="color:rgba(255,255,255,.6);font-weight:600">${wo.km}km</span>`:''}
+                  ${!isRest?`<span class="font-mono" style="color:${t.color}">${fp(wo.targetPace)}/km</span>`:''}
+                  ${!isRest?`<span>~${wo.min}min</span>`:''}
+                </div>
+                ${wo.done?`<div style="font-size:14px;color:${t.color};margin-top:2px">✓ ${wo.loggedKm}km · RPE ${wo.loggedRPE}</div>`:''}
+              </div>
+              ${!isRest?`<span style="color:rgba(255,255,255,.2);font-size:14px">›</span>`:''}
+            </div>
+          </div>`;
+      });
+    }
+  });
+  html += '</div>';
+  document.getElementById('main').innerHTML = html;
+}
+
+window.toggleWeek = wi => {
+  STATE.openWeek = STATE.openWeek === wi ? -1 : wi;
+  renderSchemaTab();
+};
+
+// ═══════════════════════════════════════════
+// NIVEAU TAB
+// ═══════════════════════════════════════════
+function renderNiveauTab() {
+  const { weeks, setup, acwr } = STATE;
+  const all = weeks.flatMap(w => w.workouts), done = all.filter(w => w.done);
+  const nr = all.filter(w => w.type !== 'restDay'), sched = nr.filter(w => w.date <= Date.now());
+  const cons = sched.length ? Math.round((done.length/sched.length)*100) : 100;
+  const lrs = done.filter(w => w.type==='longRun' && w.loggedKm);
+  const maxLR = lrs.length ? Math.max(...lrs.map(w => w.loggedKm)) : 0;
+  const wEl = Math.max(1, (Date.now()-weeks[0]?.startDate) / (7*864e5));
+  const expLR = setup.currentLongRun + (setup.goalDist*.85-setup.currentLongRun) * (Math.min(wEl,weeks.length*.8)/weeks.length);
+  const vol = Math.min(120, maxLR>0 ? (maxLR/Math.max(expLR,1))*100 : 50);
+  const its = done.filter(w => (w.type==='interval'||w.type==='tempoRun') && w.loggedMin>0);
+  const ps2 = its.length ? Math.min(130, its.reduce((s,w) => s+(w.targetPace/((w.loggedMin*60)/Math.max(w.loggedKm,.1)))*100, 0)/its.length) : 50;
+  const pct = Math.round(Math.min(150, vol*.45 + ps2*.4 + cons*.15));
+  const pc = pct>=100?'#4ade80':pct>=80?'#f59e0b':'#60a5fa';
+  const pl = pct>=105?'Boven Schema 🔥':pct>=95?'Op Schema ✓':pct>=80?'Bijna Op Schema':'In Ontwikkeling';
+  const dL = Math.max(0, Math.ceil((setup.raceDate-Date.now())/864e5));
+  const projTs = Math.round(setup.targetPaceSec*(2-Math.min(1.2,pct/100))*setup.goalDist);
+  const proj = `${Math.floor(projTs/3600)}:${String(Math.floor((projTs%3600)/60)).padStart(2,'0')}:${String(projTs%60).padStart(2,'0')}`;
+  const tgtTs = Math.round(setup.targetPaceSec*setup.goalDist);
+  const tgt = `${Math.floor(tgtTs/3600)}:${String(Math.floor((tgtTs%3600)/60)).padStart(2,'0')}:${String(tgtTs%60).padStart(2,'0')}`;
+  const ac = acwr.ratio>1.5?'#ef4444':acwr.ratio>1.3?'#f59e0b':'#4ade80';
+
+  // SVG ring
+  const sz=170,sw=13,rv=(sz-sw)/2,ci=2*Math.PI*rv;
+  const fill = Math.min(pct/110,1);
+
+  document.getElementById('main').innerHTML = `
+    <div style="padding:14px 12px">
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        ${[[Math.floor(dL/7),'weken'],[dL%7,'dagen'],[done.length,'trainingen'],[pct+'%','gereed']].map(([v,l],i) => `
+          <div style="flex:1;background:${i===3?'rgba(74,222,128,.06)':'rgba(255,255,255,.03)'};border:1px solid ${i===3?'rgba(74,222,128,.18)':'var(--border)'};border-radius:10px;padding:10px 0;text-align:center">
+            <div class="font-display" style="font-size:22px;font-weight:900;color:${i===3?pc:'#fff'};line-height:1">${v}</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:3px">${l}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:14px">
+        <div class="ring-wrap">
+          <svg width="${sz}" height="${sz}" style="transform:rotate(-90deg)">
+            <defs>
+              <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="${pc}"/>
+                <stop offset="100%" stop-color="#22d3ee"/>
+              </linearGradient>
+            </defs>
+            <circle cx="${sz/2}" cy="${sz/2}" r="${rv}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="${sw}"/>
+            <circle cx="${sz/2}" cy="${sz/2}" r="${rv}" fill="none" stroke="url(#rg)" stroke-width="${sw}" stroke-linecap="round"
+              stroke-dasharray="${ci}" stroke-dashoffset="${ci*(1-fill)}" style="transition:stroke-dashoffset 1.4s cubic-bezier(.34,1.56,.64,1)"/>
+          </svg>
+          <div class="ring-center">
+            <div class="font-display" style="font-size:40px;font-weight:900;line-height:1">${pct}<span style="font-size:17px;color:var(--text3)">%</span></div>
+            <div style="font-size:14px;font-weight:700;color:${pc};margin-top:3px">${pl}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:${ac}28;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <div style="width:40px;height:40px;border-radius:20px;background:${ac}14;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+          ${acwr.ratio>1.5?'⚠️':acwr.ratio>1.3?'🔶':acwr.ratio<.8?'📉':'✅'}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">ACWR Trainingsbelasting</div>
+          <div style="font-size:14px;font-weight:700;color:${ac}">${acwr.ratio>1.5?'Blessurerisico':acwr.ratio>1.3?'Let Op':acwr.ratio<.8?'Ondertraining':'Optimaal'}</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:1px">Acuut ${Math.round(acwr.acute)} · Chronisch ${Math.round(acwr.chronic)}</div>
+        </div>
+        <div class="font-mono" style="font-size:20px;font-weight:500;color:${ac}">${acwr.ratio.toFixed(2)}</div>
+      </div>
+
+      <div class="card card-orange" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Geprojecteerde Eindtijd</div>
+          <div class="font-mono" style="font-size:26px;font-weight:500">${proj}</div>
+          <div style="font-size:14px;color:var(--text3);margin-top:3px">Doel: ${tgt} · ${fp(setup.targetPaceSec)}/km</div>
+        </div>
+        <span style="font-size:32px">🏁</span>
+      </div>
+
+      ${[['🛤️ Lange Duurlopen',Math.round(vol),'#60a5fa','LSD vs. verwachting (45%)'],
+         ['⚡ Tempoprestaties',Math.round(ps2),'#f59e0b','Tempo vs. doel (40%)'],
+         ['✅ Consistentie',cons,'#4ade80','Voltooide trainingen (15%)']].map(([n,s,c,d]) => `
+        <div class="card" style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:600">${n}</span>
+            <span class="font-mono" style="font-size:16px;font-weight:500;color:${s>=95?'#4ade80':s>=75?'#f59e0b':'#f87171'}">${Math.min(s,100)}%</span>
+          </div>
+          <div class="score-bar"><div class="score-fill" style="width:${Math.min(s,100)}%;background:linear-gradient(90deg,${c}55,${c})"></div></div>
+          <div style="font-size:13px;color:var(--text3);margin-top:4px">${d}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// INSTELLINGEN TAB
+// ═══════════════════════════════════════════
+function renderInstellingenTab() {
+  const s = STATE.setup;
+  const pm = Math.floor(s.targetPaceSec/60), ps2 = s.targetPaceSec%60;
+  const rds = new Date(s.raceDate).toISOString().split('T')[0];
+  const hourOptions = [0, 0.5, 1, 1.5, 2, 3];
+  const hourLabels  = ['—', '30m', '1u', '1.5u', '2u', '3u'];
+  const hClass = h => h===0?'sel-none':h<=0.5?'sel-low':h<=1?'sel-med':'sel-high';
+
+  const ps = s.targetPaceSec;
+  const ts = Math.round(ps * s.goalDist);
+  const finish = `${Math.floor(ts/3600)}:${String(Math.floor((ts%3600)/60)).padStart(2,'0')}:${String(ts%60).padStart(2,'0')}`;
+  const dL = Math.max(0, Math.ceil((s.raceDate-Date.now())/864e5));
+
+  document.getElementById('main').innerHTML = `
+    <div style="padding:14px 12px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="font-display" style="font-size:17px;font-weight:800;letter-spacing:.5px;color:var(--text2)">INSTELLINGEN</div>
+        <div id="saved-indicator" style="font-size:13px;color:var(--text3)">Automatisch opgeslagen</div>
+      </div>
+
+      <!-- Goal -->
+      <div>
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700">🏁 Doelafstand</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          ${[[5,'5 km'],[10,'10 km'],[21.1,'Halve Marathon'],[42.2,'Marathon']].map(([d,l]) => `
+            <button onclick="settingsChange('goalDist',${d})" style="padding:11px 14px;border-radius:11px;background:${s.goalDist===d?'rgba(74,222,128,.1)':'rgba(255,255,255,.03)'};border:1px solid ${s.goalDist===d?'rgba(74,222,128,.35)':'rgba(255,255,255,.07)'};text-align:left;font-family:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:13px;font-weight:600;color:${s.goalDist===d?'var(--green)':'var(--text2)'}">${l}</span>
+              ${s.goalDist===d?'<span style="color:var(--green)">✓</span>':''}
+            </button>`).join('')}
+        </div>
+      </div>
+
+      <!-- Pace -->
+      <div>
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700">⚡ Doeltempo</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:12px">
+            <div style="text-align:center">
+              <div style="font-size:13px;color:var(--text3);margin-bottom:6px">min</div>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="settingsPaceChange(-1,0)">−</button>
+                <span class="stepper-val font-mono" id="sett-pm">${pm}</span>
+                <button class="stepper-btn" onclick="settingsPaceChange(1,0)">+</button>
+              </div>
+            </div>
+            <div style="font-size:26px;color:rgba(255,255,255,.2)">:</div>
+            <div style="text-align:center">
+              <div style="font-size:13px;color:var(--text3);margin-bottom:6px">sec</div>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="settingsPaceChange(0,-5)">−</button>
+                <span class="stepper-val font-mono" id="sett-ps">${ps2}</span>
+                <button class="stepper-btn" onclick="settingsPaceChange(0,5)">+</button>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;padding:7px;background:rgba(74,222,128,.06);border-radius:8px;border:1px solid rgba(74,222,128,.15)">
+            <span style="font-size:14px;color:var(--text3)">Eindtijd: </span>
+            <span id="sett-finish" class="font-mono" style="font-size:14px;font-weight:500;color:var(--green)">${finish}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Race date -->
+      <div>
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700">📅 Wedstrijddatum</div>
+        <div class="card">
+          <input type="date" value="${rds}" onchange="settingsChange('raceDate',new Date(this.value).getTime())" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none">
+          <div style="font-size:13px;color:var(--blue);margin-top:6px">Nog ${dL} dagen · ${Math.max(4,Math.ceil(dL/7))} weken schema</div>
+        </div>
+      </div>
+
+      <!-- Training days + Availability with explicit save -->
+      <div>
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700">🗓️ Trainingsdagen / week</div>
+        <div class="days-toggle">
+          ${[2,3,4,5,6].map(d => { const cur = _pendingTrainDays !== null ? _pendingTrainDays : s.trainingDays; return `<button class="day-tog ${cur===d?'on':''}" onclick="settingsPendingTrainDays(${d})">${d}</button>`; }).join('')}
+        </div>
+      </div>
+
+      <!-- Availability hours -->
+      <div>
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700">⏱️ Beschikbaarheid per dag</div>
+        <div class="card" style="padding:12px">
+          <div class="hour-grid">
+            ${DAY_NAMES.map((day, di) => {
+              const curH = (_pendingAvailHours !== null ? _pendingAvailHours : s.availHours)[di];
+              return `<div class="hour-cell">
+                <div class="hour-day">${day}</div>
+                ${hourOptions.map((h, hi) => `
+                  <button class="hour-btn ${curH===h?hClass(h):''}" onclick="settingsPendingAvail(${di},${h})">${hourLabels[hi]}</button>
+                `).join('')}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <button id="sched-save-btn" onclick="saveScheduleSettings()" style="display:none;width:100%;margin-top:10px;padding:13px;border-radius:12px;border:none;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#080810;background:linear-gradient(135deg,var(--green),#22c55e);box-shadow:0 4px 20px rgba(74,222,128,.3)">
+          📋 Schema Herbereken &amp; Opslaan
+        </button>
+        <div id="sched-save-msg" style="display:none;text-align:center;font-size:13px;color:var(--green);margin-top:8px;font-weight:600"></div>
+      </div>
+
+      <!-- Fitness -->
+      <div>
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700">💪 Huidig niveau</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${[['Wekelijks volume','currentKm',s.currentKm,1,5,120,'km'],
+             ['Langste duurloop','currentLongRun',s.currentLongRun,.5,1,40,'km'],
+             ['Lichaamsgewicht','bodyWeight',s.bodyWeight,1,40,150,'kg']].map(([lbl,key,val,stp,mn,mx,unit]) => `
+            <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:14px;color:var(--text2)">${lbl}</div>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="settingsStepChange('${key}',${-stp},${mn},${mx})">−</button>
+                <span class="stepper-val font-mono" id="sv2-${key}" data-val="${val}">${val}${unit}</span>
+                <button class="stepper-btn" onclick="settingsStepChange('${key}',${stp},${mn},${mx})">+</button>
+              </div>
+            </div>`).join('')}
+          <div class="card">
+            <div style="font-size:14px;color:var(--text2);margin-bottom:10px">Tempo laatste duurloop</div>
+            <div style="display:flex;align-items:center;justify-content:space-around">
+              <div style="text-align:center">
+                <div style="font-size:12px;color:var(--text3);margin-bottom:6px">min</div>
+                <div class="stepper">
+                  <button class="stepper-btn" onclick="settingsPaceChange2(-1,0)">−</button>
+                  <span class="font-mono" id="sett-cpm" style="font-size:18px;min-width:32px;text-align:center">${Math.floor(s.currentPaceSec/60)}</span>
+                  <button class="stepper-btn" onclick="settingsPaceChange2(1,0)">+</button>
+                </div>
+              </div>
+              <div style="font-size:26px;color:rgba(255,255,255,.2)">:</div>
+              <div style="text-align:center">
+                <div style="font-size:12px;color:var(--text3);margin-bottom:6px">sec</div>
+                <div class="stepper">
+                  <button class="stepper-btn" onclick="settingsPaceChange2(0,-5)">−</button>
+                  <span class="font-mono" id="sett-cps" style="font-size:18px;min-width:32px;text-align:center">${String(s.currentPaceSec%60).padStart(2,'0')}</span>
+                  <button class="stepper-btn" onclick="settingsPaceChange2(0,5)">+</button>
+                </div>
+              </div>
+              <div style="padding:7px 12px;background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.15);border-radius:9px;text-align:center">
+                <div class="font-mono" style="font-size:17px;font-weight:500;color:var(--blue)">${Math.floor(s.currentPaceSec/60)}:${String(s.currentPaceSec%60).padStart(2,'0')}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">/km nu</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+      <div style="padding-top:8px">
+        <button onclick="resetApp()" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(248,113,113,.25);background:rgba(248,113,113,.06);color:#f87171;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">
+          🗑️ Reset — begin opnieuw
+        </button>
+        <div style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;margin-top:8px">Verwijdert alle data en trainingsgeschiedenis</div>
+      </div>
+    </div>\`;
+}
+
+// Settings change handlers
+window.settingsChange = function(key, val) {
+  const ns = {...STATE.setup, [key]: val};
+  saveSettings(ns);
+};
+window.settingsPaceChange2 = function(dm, ds) {
+  // current pace (last long run)
+  const s = STATE.setup;
+  let pm = Math.floor(s.currentPaceSec/60) + dm;
+  let ps = (s.currentPaceSec%60) + ds;
+  pm = Math.max(3, Math.min(12, pm));
+  ps = Math.max(0, Math.min(55, ps));
+  const cEl = document.getElementById('sett-cpm');
+  const sEl = document.getElementById('sett-cps');
+  if (cEl) cEl.textContent = pm;
+  if (sEl) sEl.textContent = String(ps).padStart(2,'0');
+  saveSettings({...STATE.setup, currentPaceSec: pm*60+ps});
+};
+
+window.settingsPaceChange = function(dm, ds) {
+  const s = STATE.setup;
+  const pm = Math.max(3, Math.min(12, Math.floor(s.targetPaceSec/60) + dm));
+  const ps2 = Math.max(0, Math.min(55, (s.targetPaceSec%60) + ds));
+  const ns = {...s, targetPaceSec: pm*60+ps2};
+  // update display
+  const pmEl = document.getElementById('sett-pm'), psEl = document.getElementById('sett-ps');
+  if (pmEl) pmEl.textContent = pm;
+  if (psEl) psEl.textContent = ps2;
+  const fEl = document.getElementById('sett-finish');
+  if (fEl) { const ts=Math.round((pm*60+ps2)*s.goalDist); fEl.textContent=`${Math.floor(ts/3600)}:${String(Math.floor((ts%3600)/60)).padStart(2,'0')}:${String(ts%60).padStart(2,'0')}`; }
+  saveSettings(ns);
+};
+window.settingsStepChange = function(key, delta, min, max) {
+  const el = document.getElementById('sv2-'+key);
+  const unit = (el.textContent.match(/[a-zμ]+/)||[''])[0];
+  let v = parseFloat(el.dataset.val);
+  v = Math.max(min, Math.min(max, +(v+delta).toFixed(2)));
+  el.dataset.val = v; el.textContent = v+(unit||'');
+  // Recompute currentPaceSec when min or sec changes
+  const ns = {...STATE.setup, [key]: v};
+  if (key === 'currentPaceMin' || key === 'currentPaceSec2') {
+    const pm = key==='currentPaceMin' ? v : Math.floor((STATE.setup.currentPaceSec||390)/60);
+    const ps = key==='currentPaceSec2' ? v : (STATE.setup.currentPaceSec||390)%60;
+    ns.currentPaceSec = pm*60+ps;
+  }
+  saveSettings(ns);
+};
+// Pending schedule changes (trainingDays + availHours) — only applied on save
+let _pendingTrainDays = null;
+let _pendingAvailHours = null;
+
+function getPendingOrCurrent() {
+  return {
+    trainingDays: _pendingTrainDays !== null ? _pendingTrainDays : STATE.setup.trainingDays,
+    availHours: _pendingAvailHours !== null ? _pendingAvailHours : [...STATE.setup.availHours],
+  };
+}
+
+function showSaveButton() {
+  // Use setTimeout to ensure DOM has settled after any re-render
+  setTimeout(() => {
+    const btn = document.getElementById('sched-save-btn');
+    const msg = document.getElementById('sched-save-msg');
+    if (btn) { btn.style.display = 'block'; btn.style.opacity='1'; }
+    if (msg) { msg.style.display = 'none'; }
+  }, 0);
+}
+
+window.settingsPendingTrainDays = function(d) {
+  _pendingTrainDays = d;
+  // Update toggle visuals without full re-render
+  document.querySelectorAll('.day-tog').forEach((btn, i) => {
+    const val = [2,3,4,5,6][i];
+    btn.classList.toggle('on', val === d);
+  });
+  showSaveButton();
+};
+
+window.settingsPendingAvail = function(di, h) {
+  if (!_pendingAvailHours) _pendingAvailHours = [...STATE.setup.availHours];
+  _pendingAvailHours[di] = h;
+  renderInstellingenTab();
+  // showSaveButton AFTER re-render (DOM was recreated)
+  showSaveButton();
+};
+
+window.saveScheduleSettings = function() {
+  const { trainingDays, availHours } = getPendingOrCurrent();
+  const ns = { ...STATE.setup, trainingDays, availHours };
+  _pendingTrainDays = null;
+  _pendingAvailHours = null;
+  // Rebuild full plan
+  clearTimeout(_saveTimer);
+  const merged = rebuildFuture(STATE.weeks, ns);
+  const { weeks, acwr } = applyAdaptations(merged, ns);
+  STATE.setup = ns;
+  STATE.weeks = weeks;
+  STATE.acwr = acwr;
+  renderApp();
+  persistState();
+  // Show saved message
+  const btn = document.getElementById('sched-save-btn');
+  const msg = document.getElementById('sched-save-msg');
+  if (btn) btn.style.display = 'none';
+  if (msg) { msg.style.display = 'block'; msg.textContent = '✓ Schema bijgewerkt!'; setTimeout(() => { if(msg) msg.style.display='none'; }, 2000); }
+};
+
+window.settingsAvailChange = function(di, h) {
+  const newAvail = [...STATE.setup.availHours]; newAvail[di] = h;
+  saveSettings({...STATE.setup, availHours: newAvail});
+  renderInstellingenTab();
+};
+
+let _saveTimer = null;
+function saveSettings(ns) {
+  STATE.setup = ns;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => {
+    const merged = rebuildFuture(STATE.weeks, ns);
+    const { weeks, acwr } = applyAdaptations(merged, ns);
+    STATE.weeks = weeks; STATE.acwr = acwr;
+    // Update header
+    renderApp();
+    persistState();
+    // Show saved indicator
+    const ind = document.getElementById('saved-indicator');
+    if (ind) { ind.textContent = '✓ Schema bijgewerkt'; ind.style.color = 'var(--green)'; setTimeout(() => { ind.textContent='Automatisch opgeslagen'; ind.style.color='var(--text3)'; }, 1500); }
+  }, 600);
+}
+
+// ═══════════════════════════════════════════
+// WORKOUT SHEET
+// ═══════════════════════════════════════════
+window.openSheet = function(id) {
+  const wo = STATE.weeks.flatMap(w => w.workouts).find(w => w.id === id);
+  if (!wo) return;
+  STATE.sheet = { id, mode: 'view', rpe: wo.loggedRPE || TYPES[wo.type].baseRPE, km: wo.km, min: wo.min };
+  renderSheet();
+};
+
+function renderSheet() {
+  const { id, mode } = STATE.sheet;
+  const wo = STATE.weeks.flatMap(w => w.workouts).find(w => w.id === id);
+  if (!wo) return closeSheet();
+  const t = TYPES[wo.type], tc = t.color, isRest = wo.type === 'restDay';
+
+  const rat = {
+    easyRun:  ['Stimuleert doorbloeding zonder extra belasting.','Zone 1–2. Opbouw mitochondriale dichtheid.','Na intensiteit of LSD: actief herstel.'],
+    longRun:  ['Traint vetoxidatie, verhoogt glycogeenopslag.','Duur >75min triggert unieke aanpassingen.','Weekend: enige dag met genoeg tijd.'],
+    tempoRun: ['Verhoogt lactaatdrempel.','~85–90% HRmax. Drempel stijgt na 4–6 weken.','Midden week: uitgerust én herstelruimte.'],
+    interval: ['Verhoogt VO₂max en loopeconomie.','Pieken >90% HRmax vergroten slagvolume.','Begin week: fris zenuwstelsel noodzakelijk.'],
+    restDay:  ['Supercompensatie vindt in rust plaats.','Spiervezels herbouwen, glycogeen aanvullen.','Strategisch na intensieve sessies.'],
+  };
+  const [rW,rP,rT] = rat[wo.type] || rat.restDay;
+
+  // Render approved horizontal bar diagram
+  function renderBlockDiagram(blocks) {
+    if (!blocks || blocks.length === 0) return '';
+    const zoneWidth  = { Z1:18, Z2:38, Z3:55, Z4:75, Z5:100 };
+    const zoneNames  = { Z1:'Herstel', Z2:'Duurloop', Z3:'Aerob', Z4:'Tempo', Z5:'VO\u2082max' };
+    const totalMin = blocks.reduce((s,b) => s + Math.max(1, Math.round(b.km * b.pace / 60)), 0);
+    const totalKm  = +blocks.reduce((s,b) => s + b.km, 0).toFixed(1);
+
+    const header = `<div style="display:flex;align-items:center;gap:0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="width:80px;flex-shrink:0;font-size:11px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.5px">Zone</div>
+      <div style="flex:1;margin-right:10px;font-size:11px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.5px">Intensiteit</div>
+      <div style="width:118px;flex-shrink:0;font-size:11px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.5px">Tempo · Tijd · Km</div>
+    </div>`;
+
+    const rows = blocks.map(b => {
+      const bMin = Math.max(1, Math.round(b.km * b.pace / 60));
+      const wPct = zoneWidth[b.zone] || 20;
+      const zoneName = zoneNames[b.zone] || b.zone;
+      // label: show only if it adds info (not redundant with zone name)
+      const showLabel = b.label && b.label !== '' && b.label !== zoneName;
+      return `<div style="display:flex;align-items:center;gap:0;margin-bottom:8px">
+        <div style="width:80px;flex-shrink:0;padding-right:8px">
+          <div style="font-size:11px;font-weight:700;color:${b.color};white-space:nowrap">${b.zone} ${b.zoneName||zoneName}</div>
+          ${showLabel ? `<div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:1px;white-space:nowrap">${b.label}</div>` : ''}
+        </div>
+        <div style="flex:1;position:relative;height:32px;margin-right:10px">
+          <div style="position:absolute;inset:0;background:rgba(255,255,255,.05);border-radius:6px"></div>
+          <div style="position:absolute;top:0;left:0;bottom:0;width:${wPct}%;background:${b.color};border-radius:6px;opacity:.85"></div>
+        </div>
+        <div style="width:118px;flex-shrink:0">
+          <div style="display:flex;align-items:baseline;gap:3px;margin-bottom:2px">
+            <span style="font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:${b.color};line-height:1">${fp(b.pace)}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">/km</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.65)">${bMin}min</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.25)">·</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.5)">${b.km}km</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const footer = `<div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)">
+      <span style="font-size:13px;color:rgba(255,255,255,.35)">Totaal</span>
+      <span style="font-family:'DM Mono',monospace;font-size:13px;color:rgba(255,255,255,.6)">${totalMin} min · ${totalKm} km</span>
+    </div>`;
+
+    return `<div style="margin-bottom:16px"><div class="section-lbl">Trainingsstructuur</div>${header}${rows}${footer}</div>`;
+  }
+
+
+  let structureHtml = '';
+  if (wo.blocks) {
+    structureHtml = renderBlockDiagram(wo.blocks);
+  }
+
+  let formHtml = '';
+  if (mode === 'log' || mode === 'edit') {
+    const rpe = STATE.sheet.rpe;
+    const rc = rpe<=3?'#4ade80':rpe<=6?'#f59e0b':rpe<=8?'#f87171':'#ef4444';
+    const delta = rpe - t.baseRPE;
+    formHtml = `
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+        <div class="font-display" style="font-size:16px;font-weight:800;letter-spacing:.5px;margin-bottom:12px;color:${tc}">${mode==='edit'?'✏️ BEWERK':'LOG TRAINING'}</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+              <span style="font-size:14px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px">RPE — Inspanningsniveau</span>
+              <span class="font-mono" style="font-size:22px;font-weight:500;color:${rc}">${rpe}<span style="font-size:15px;color:var(--text3)">/10</span></span>
+            </div>
+            <input type="range" min="1" max="10" step="0.5" value="${rpe}" oninput="sheetRPEChange(this.value)" style="accent-color:${rc};color:${rc}">
+            <div style="text-align:center;font-size:13px;font-weight:700;color:${rc};margin-top:5px">${RPE_LABELS[Math.round(rpe)]}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><label style="font-size:14px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">Gelopen km</label>
+              <input type="number" step="0.1" value="${STATE.sheet.km}" class="num-input" style="font-size:16px" oninput="sheetKmChange(this.value)"></div>
+            <div><label style="font-size:14px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">Duur (min)</label>
+              <input type="number" step="1" value="${STATE.sheet.min}" class="num-input" style="font-size:16px" oninput="sheetMinChange(this.value)"></div>
+          </div>
+          ${Math.abs(delta)>=1?`<div style="font-size:13px;padding:10px 12px;border-radius:9px;background:${delta>=2?'rgba(248,113,113,.08)':'rgba(96,165,250,.08)'};border:1px solid ${delta>=2?'rgba(248,113,113,.22)':'rgba(96,165,250,.22)'};color:${delta>=2?'#f87171':'#93c5fd'}">${delta>=2?`⚠️ +${delta.toFixed(1)} pt — schema past zich aan`:`💪 ${Math.abs(delta).toFixed(1)} pt lichter!`}</div>`:''}
+          <div style="display:flex;gap:7px">
+            <button onclick="saveLog()" style="cursor:pointer;flex:1;padding:13px;border-radius:11px;background:linear-gradient(135deg,${tc},${tc}cc);border:none;color:#080810;font-size:14px;font-weight:800;font-family:'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase">${mode==='edit'?'Opslaan':'Opslaan & Aanpassen'}</button>
+            <button onclick="sheetMode('view')" style="cursor:pointer;padding:13px 16px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text3);font-family:inherit;font-size:13px">✕</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const overlay = document.getElementById('sheet-overlay');
+  overlay.style.display = 'flex';
+  overlay.innerHTML = `
+    <div class="sheet" style="border-top-color:${tc}44" id="sheet-inner">
+      <div class="sheet-handle"><div class="sheet-handle-bar"></div></div>
+      <div style="padding:6px 16px 40px">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;padding-top:4px">
+          <div style="width:50px;height:50px;border-radius:25px;background:${tc}18;border:1px solid ${tc}30;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${t.icon}</div>
+          <div style="flex:1">
+            <div class="font-display" style="font-size:22px;font-weight:800;letter-spacing:.4px;line-height:1.1">${wo.day} — ${t.label}</div>
+            <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+              <span style="font-size:13px;padding:2px 8px;border-radius:14px;font-weight:700;background:${tc}18;color:${tc};border:1px solid ${tc}30">${t.label}</span>
+              ${wo.done?`<span style="font-size:13px;padding:2px 8px;border-radius:14px;font-weight:700;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)">✓ Voltooid</span>`:''}
+              ${wo.missed?`<span style="font-size:13px;padding:2px 8px;border-radius:14px;font-weight:700;background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.25)">Gemist</span>`:''}
+              ${wo.adapted?`<span style="font-size:13px;padding:2px 8px;border-radius:14px;font-weight:700;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)">🔄 Aangepast</span>`:''}
+            </div>
+          </div>
+          <button onclick="closeSheet()" style="cursor:pointer;width:32px;height:32px;border-radius:16px;background:rgba(255,255,255,.07);border:none;color:var(--text3);font-size:14px;flex-shrink:0">✕</button>
+        </div>
+
+        ${wo.adapted&&wo.adaptNote?`<div class="adapt-note card-purple">🔮 ${wo.adaptNote}</div>`:''}
+
+        ${!isRest?`
+        <div class="stat-grid">
+          ${[['📍',`${wo.km}km`,'Afstand'],['⏱️',`~${wo.min}min`,'Duur'],['🎯',`${fp(wo.targetPace)}/km`,'Tempo']].map(([ic,v,l]) =>
+            `<div class="stat-cell"><div style="font-size:16px;margin-bottom:4px">${ic}</div><div class="font-mono" style="font-size:14px;font-weight:500">${v}</div><div style="font-size:13px;color:var(--text3);margin-top:2px">${l}</div></div>`
+          ).join('')}
+        </div>`:''}
+
+        ${mode==='view'?structureHtml:''}
+
+        ${mode==='view'?`
+        <div style="margin-bottom:14px">
+          <div class="section-lbl">Waarom deze training?</div>
+          ${[['🎯 Doel',tc,rW],['🔬 Fysiologie','#a78bfa',rP],['📅 Timing','#60a5fa',rT]].map(([lbl,col,txt]) =>
+            `<div style="background:rgba(255,255,255,.028);border:1px solid rgba(255,255,255,.055);border-radius:10px;padding:12px 14px;margin-bottom:6px">
+              <div style="font-size:13px;font-weight:700;color:${col};margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">${lbl}</div>
+              <div style="font-size:13px;color:var(--text2);line-height:1.65">${txt}</div>
+            </div>`
+          ).join('')}
+        </div>`:''}
+
+        ${wo.done&&mode==='view'?`
+        <div class="logged-banner card-green">
+          <div><div style="font-size:13px;color:var(--green);font-weight:700;margin-bottom:3px">✓ Gelogd</div>
+          <div style="font-size:15px;color:var(--text2);display:flex;gap:10px"><span>${wo.loggedKm}km</span><span>${wo.loggedMin}min</span><span>RPE ${wo.loggedRPE}</span></div></div>
+          <button onclick="sheetMode('edit')" style="cursor:pointer;padding:8px 13px;border-radius:9px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:var(--green);font-size:15px;font-weight:700;font-family:inherit">✏️ Bewerken</button>
+        </div>`:''}
+
+        ${wo.missed&&mode==='view'?`
+        <div class="logged-banner" style="background:rgba(100,116,139,.07);border:1px solid rgba(100,116,139,.2)">
+          <div><div style="font-size:14px;color:#94a3b8;font-weight:700;margin-bottom:2px">Gemist</div>
+          <div style="font-size:13px;color:var(--text3)">Je kunt dit ongedaan maken</div></div>
+          <div style="display:flex;gap:6px">
+            <button onclick="unmissWo('${wo.id}')" style="cursor:pointer;padding:6px 10px;border-radius:9px;background:rgba(100,116,139,.12);border:1px solid rgba(100,116,139,.3);color:#94a3b8;font-size:13px;font-weight:700;font-family:inherit">↩ Ongedaan</button>
+            <button onclick="sheetMode('log')" style="cursor:pointer;padding:6px 10px;border-radius:9px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:var(--green);font-size:13px;font-weight:700;font-family:inherit">✓ Loggen</button>
+          </div>
+        </div>`:''}
+
+        ${formHtml}
+
+        ${!wo.done&&!wo.missed&&!isRest&&mode==='view'?`
+        <div style="display:flex;gap:7px;margin-top:16px">
+          <button onclick="sheetMode('log')" style="cursor:pointer;flex:1;padding:12px;border-radius:11px;background:linear-gradient(135deg,${tc},${tc}cc);border:none;color:#080810;font-size:15px;font-weight:800;font-family:'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase">Training Loggen</button>
+          <button onclick="missWo('${wo.id}')" style="cursor:pointer;padding:12px 14px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text3);font-family:inherit;font-size:14px">Gemist</button>
+        </div>`:''}
+
+        ${wo.done&&mode==='view'?`
+        <div style="margin-top:10px;text-align:center">
+          <button onclick="undoLog('${wo.id}')" style="cursor:pointer;background:none;border:none;color:var(--text3);font-size:13px;font-family:inherit;text-decoration:underline">Log ongedaan maken</button>
+        </div>`:''}
+      </div>
+    </div>`;
+
+  // Close on overlay click
+  overlay.onclick = e => { if (e.target === overlay) closeSheet(); };
+}
+
+window.closeSheet = () => {
+  document.getElementById('sheet-overlay').style.display = 'none';
+  STATE.sheet = null;
+  renderSchemaTab();
+};
+window.sheetMode = m => { STATE.sheet.mode = m; renderSheet(); };
+window.sheetRPEChange = v => { STATE.sheet.rpe = parseFloat(v); renderSheet(); };
+window.sheetKmChange  = v => { STATE.sheet.km  = parseFloat(v); };
+window.sheetMinChange = v => { STATE.sheet.min = parseInt(v); };
+
+window.saveLog = () => {
+  const { id, rpe, km, min } = STATE.sheet;
+  updateWo(id, { done:true, missed:false, loggedRPE:rpe, loggedKm:km, loggedMin:min });
+  closeSheet();
+};
+window.missWo   = id => { updateWo(id, { missed:true, done:false, loggedRPE:null }); closeSheet(); };
+window.unmissWo = id => { updateWo(id, { missed:false }); closeSheet(); };
+window.undoLog  = id => { updateWo(id, { done:false, loggedRPE:null, loggedKm:null, loggedMin:null, adapted:false, adaptNote:null }); closeSheet(); };
+
+function updateWo(id, patch) {
+  STATE.weeks = STATE.weeks.map(wk => ({
+    ...wk, workouts: wk.workouts.map(wo => wo.id===id ? {...wo,...patch} : wo)
+  }));
+  const { weeks, acwr } = applyAdaptations(STATE.weeks, STATE.setup);
+  STATE.weeks = weeks; STATE.acwr = acwr;
+  persistState();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.resetApp = function() {
+  if (confirm('Weet je zeker dat je alle data wilt verwijderen?')) {
+    clearPersistedState();
+    STATE.setup = null; STATE.weeks = []; STATE.tab = 'schema'; STATE.openWeek = -1;
+    renderSetup();
+  }
+};
+
+// Register service worker for PWA install prompt
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Inline service worker via blob
+    const swCode = `
+      const CACHE = 'adaptiverun-v1';
+      self.addEventListener('install', e => {
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        self.clients.claim();
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          caches.match(e.request).then(r => r || fetch(e.request).catch(() => r))
+        );
+      });
+    `;
+    const blob = new Blob([swCode], {type:'application/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  });
+}
+
+// Android install prompt
+let _installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  // Show install banner after 2s if not already installed
+  setTimeout(() => {
+    if (!window.matchMedia('(display-mode: standalone)').matches && _installPrompt) {
+      const banner = document.createElement('div');
+      banner.id = 'install-banner';
+      banner.style.cssText = 'position:fixed;bottom:80px;left:12px;right:12px;z-index:9999;background:#1a1a2e;border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+      banner.innerHTML = `
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">📲 Installeer AdaptiveRun</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">Voeg toe aan je beginscherm</div>
+        </div>
+        <button id="install-btn" style="padding:9px 16px;border-radius:10px;background:linear-gradient(135deg,#4ade80,#22c55e);border:none;color:#080810;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap">Installeer</button>
+        <button id="install-dismiss" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:4px">✕</button>
+      `;
+      document.body.appendChild(banner);
+      document.getElementById('install-btn').onclick = () => {
+        _installPrompt.prompt();
+        _installPrompt.userChoice.then(() => { banner.remove(); _installPrompt = null; });
+      };
+      document.getElementById('install-dismiss').onclick = () => banner.remove();
+    }
+  }, 2000);
+});
+
+// Boot: load saved state or show setup
+if (loadPersistedState()) {
+  renderApp();
+} else {
+  renderSetup();
+}
+</script>
+</body>
+</html>
